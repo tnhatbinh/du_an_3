@@ -3,15 +3,251 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!-- //reset css  -->
-    <link rel="stylesheet" href="./css/reset.css" />
-    <!-- //style -->
-    <link rel="stylesheet" href="./css/style.css" />
-    <title>Figma to HTML</title>
+    <title>Quản lý Hóa đơn</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
   </head>
   <body>
-    <script src="./main.js"></script>
-    <h1>FIGMA to HTML</h1>
+    <!-- MÀN HÌNH ĐĂNG NHẬP -->
+    <div id="login-screen" class="login-overlay">
+      <div class="login-box">
+        <div class="login-header">ĐĂNG NHẬP HỆ THỐNG</div>
+        <div class="login-body">
+          <input
+            type="text"
+            placeholder="Tên đăng nhập (VD: admin)"
+            value="admin"
+          />
+          <input type="password" placeholder="Mật khẩu" value="admin" />
+          <button
+            class="btn btn-blue"
+            onclick="handleLogin()"
+            style="width: 100%; margin: 0; padding: 8px"
+          >
+            Đăng nhập
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MÀN HÌNH CHÍNH -->
+    <div
+      id="app-screen"
+      style="display: none; flex-direction: column; height: 100vh"
+    >
+      <header class="header">
+        <div class="header-left">
+          <img
+            src="logo.png"
+            alt="Logo"
+            class="logo"
+            onerror="this.style.display = 'none'"
+          />
+          <div class="header-titles">
+            <div class="title-en">QUẢN LÝ DỊCH VỤ</div>
+            <div class="title-vi">Quản lý thanh toán hóa đơn dịch vụ</div>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="top-links">
+            <i class="fa fa-user"></i> <span>người dùng</span> |
+            <i class="fa fa-sign-out-alt"></i>
+            <span class="logout" onclick="handleLogout()">Đăng xuất</span>
+          </div>
+          <div class="date-time">Thứ 2, ngày 14/9/2026</div>
+        </div>
+      </header>
+
+      <nav class="top-nav">
+        <ul>
+          <li><i class="fa fa-home"></i> TRANG CHỦ</li>
+          <li><i class="fa fa-users"></i> KHÁCH HÀNG</li>
+          <li class="active">
+            <i class="fa fa-file-invoice-dollar"></i> QUẢN LÝ HÓA ĐƠN
+          </li>
+          <li><i class="fa fa-bolt"></i> DỊCH VỤ ĐIỆN</li>
+          <li><i class="fa fa-tint"></i> DỊCH VỤ NƯỚC</li>
+          <li><i class="fa fa-wifi"></i> INTERNET</li>
+          <li><i class="fa fa-chart-bar"></i> BÁO CÁO</li>
+          <li><i class="fa fa-cog"></i> QUẢN TRỊ</li>
+        </ul>
+      </nav>
+
+      <div class="main-container">
+        <aside class="sidebar">
+          <ul>
+            <li>Tra cứu theo Tòa nhà</li>
+            <li>Tra cứu theo Khu vực</li>
+            <li class="active">Tất cả Hóa đơn</li>
+            <li>Hóa đơn Tiền Điện</li>
+            <li>Hóa đơn Tiền Nước</li>
+            <li>Hóa đơn Internet</li>
+            <li>Phí rác thải sinh hoạt</li>
+          </ul>
+        </aside>
+
+        <main class="content">
+          <div class="content-header">
+            <h2>QUẢN LÝ TRẠNG THÁI THANH TOÁN HÓA ĐƠN KHÁCH HÀNG</h2>
+          </div>
+
+          <div class="toolbar">
+            <div class="toolbar-actions">
+              <button class="btn btn-add" onclick="openModal()">
+                <i class="fa fa-plus"></i> Thêm
+              </button>
+              <button class="btn btn-edit" onclick="editSelected()">
+                <i class="fa fa-pencil-alt"></i> Sửa
+              </button>
+              <button class="btn btn-delete" onclick="deleteSelected()">
+                <i class="fa fa-times"></i> Xóa
+              </button>
+            </div>
+            <div class="toolbar-search">
+              <input
+                type="text"
+                placeholder="Tìm Tên hoặc Mã KH"
+                oninput="handleSearch(this.value)"
+              />
+              <select onchange="handleStatusFilter(this.value)">
+                <option value="">-- Lọc theo Trạng thái --</option>
+                <option value="Chưa thanh toán">Chưa thanh toán</option>
+                <option value="Đã thanh toán">Đã thanh toán</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 30px">
+                    <input
+                      type="checkbox"
+                      id="check-all"
+                      onchange="toggleCheckAll(this)"
+                    />
+                  </th>
+                  <th>Mã Khách Hàng <i class="fa fa-caret-down"></i></th>
+                  <th>Tên Khách Hàng <i class="fa fa-caret-down"></i></th>
+                  <th>Loại Dịch Vụ <i class="fa fa-caret-down"></i></th>
+                  <th style="text-align: right">
+                    Số Tiền (VNĐ) <i class="fa fa-caret-up"></i>
+                  </th>
+                  <th style="text-align: center">
+                    Trạng Thái <i class="fa fa-caret-down"></i>
+                  </th>
+                  <th style="width: 80px"></th>
+                </tr>
+              </thead>
+              <tbody id="table-body">
+                <!-- JS render -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <div class="page-controls">
+              <button onclick="changePage('first')">
+                <i class="fa fa-step-backward"></i>
+              </button>
+              <button onclick="changePage('prev')">
+                <i class="fa fa-caret-left"></i>
+              </button>
+              <input
+                type="text"
+                id="page-input"
+                value="1"
+                class="page-input"
+                readonly
+              />
+              <button onclick="changePage('next')">
+                <i class="fa fa-caret-right"></i>
+              </button>
+              <button onclick="changePage('last')">
+                <i class="fa fa-step-forward"></i>
+              </button>
+              <select id="items-per-page" onchange="changeItemsPerPage()">
+                <option value="15">15</option>
+                <option value="30">30</option>
+              </select>
+              <span>Bản ghi / trang</span>
+            </div>
+            <div class="page-info" id="page-info-text">
+              <!-- JS render -->
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modal-title">CẬP NHẬT THÔNG TIN HÓA ĐƠN</h3>
+          <div class="modal-header-actions">
+            <i class="fa fa-window-minimize"></i>
+            <i class="fa fa-window-maximize"></i>
+            <i class="fa fa-times" onclick="closeModal()"></i>
+          </div>
+        </div>
+        <div class="modal-body">
+          <p class="required-note">Các trường có dấu * yêu cầu phải nhập.</p>
+          <fieldset>
+            <legend>Thông tin Chi tiết:</legend>
+
+            <div class="form-group">
+              <label>Mã Khách Hàng (*)</label>
+              <input type="text" id="inp-id" style="width: 150px; flex: none" />
+            </div>
+
+            <div class="form-group">
+              <label>Tên Khách Hàng (*)</label>
+              <input type="text" id="inp-name" />
+            </div>
+
+            <div class="form-group">
+              <label>Loại Dịch Vụ</label>
+              <select id="inp-service">
+                <option>Tiền Nước</option>
+                <option>Tiền Điện</option>
+                <option>Internet</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Số Tiền (VNĐ) (*)</label>
+              <input
+                type="number"
+                id="inp-amount"
+                style="width: 150px; flex: none"
+              />
+            </div>
+
+            <div class="form-group">
+              <label>Trạng Thái</label>
+              <select id="inp-status" style="width: 150px; flex: none">
+                <option>Chưa thanh toán</option>
+                <option>Đã thanh toán</option>
+              </select>
+            </div>
+          </fieldset>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline-green" onclick="saveData()">
+            <i class="fa fa-check-circle"></i> Lưu & Đóng
+          </button>
+          <button class="btn btn-outline-red" onclick="closeModal()">
+            <i class="fa fa-times-circle"></i> Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="main.js"></script>
   </body>
 </html>
